@@ -1,0 +1,14 @@
+{
+  "name": "helpr-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  }
+}
