@@ -1,23 +1,51 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, StatusBar, Animated, Easing } from 'react-native';
-import { useRouter } from 'expo-router'; // For navigation
+import { Text, Animated, Easing, StatusBar, StyleSheet } from 'react-native';
+import { useRouter, useNavigation } from 'expo-router';
+import { NavigationProp } from '@react-navigation/native';
+import * as SplashScreenModule from 'expo-splash-screen'; // Renamed import to avoid conflict
 
-export default function SplashScreen() {
+export default function SplashComponent() { // Renamed from SplashScreen to SplashComponent
   const router = useRouter();
+  const navigation = useNavigation<NavigationProp<any>>();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Prevent auto-hiding of the splash screen
+    SplashScreenModule.preventAutoHideAsync().catch(console.warn);
+      
+    navigation.setOptions({
+            transitionSpec: {
+              open: { animation: 'timing', config: { duration: 0 } }, // No open animation
+              close: { animation: 'timing', config: { duration: 0 } }, // No close animation
+            },
+            cardStyleInterpolator: ({ current }: { current: { progress: { value: number } } }) => ({
+              cardStyle: {
+                opacity: current.progress.value, // Fade effect
+              },
+            }),
+          });
+
+   const timer = setTimeout(async () => {
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 500,
         easing: Easing.linear,
         useNativeDriver: true,
-    }).start(() =>
-      router.push('/landing')); // Navigate to landing screen after 2 seconds
-    }, 1500); // 1500ms + 500ms wait = 2 seconds total
-    return () => clearTimeout(timer); // Cleanup timer on unmount
-  }, [router,fadeAnim]);
+      }).start(async () => {
+        try {
+          await SplashScreenModule.hideAsync();
+          // Add a small delay to ensure transition is applied
+          setTimeout(() => {
+            router.push('/landing'); // Navigate after fade and delay
+          }, 100); // 100ms delay
+        } catch (error) {
+          console.error('Error hiding splash screen:', error);
+          router.push('/landing'); // Fallback navigation
+        }
+      });
+    }, 1500); // Start fade after 1.5 seconds
+    return () => clearTimeout(timer);
+  }, [router, fadeAnim, navigation]);
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim}]}>

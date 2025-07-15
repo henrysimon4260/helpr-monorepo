@@ -7,6 +7,8 @@ export default function Layout() {
       screenOptions={{
         headerShown: false,
       }}
-    />
+    >  
+    <Stack.Screen name="landing" options={{ animation: 'fade' }} />
+    </Stack>
   );
 }
