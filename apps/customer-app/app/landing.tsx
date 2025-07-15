@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, StatusBar } from 'react-native';
 export default function LandingScreen() {
   return (
     <View style={styles.container}>
-      <StatusBar hidden={true} /> {/* Hides the status bar */}
+      <StatusBar hidden={true} />{/* Hides the status bar */}
       <Text style={styles.title}>Landing Screen</Text>
       <Text style={styles.subtitle}>Welcome to Helpr - Start Here</Text>
     </View>

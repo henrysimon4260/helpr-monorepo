@@ -6,11 +6,14 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@helpr/*": ["packages/*/src"]
+      "@helpr/*": [
+        "packages/*/src"
+      ]
     }
-  }
+  },
+  "extends": "expo/tsconfig.base"
 }
