@@ -28,7 +28,7 @@ export default function SplashComponent() { // Renamed from SplashScreen to Spla
    const timer = setTimeout(async () => {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 500,
+        duration: 300,
         easing: Easing.linear,
         useNativeDriver: true,
       }).start(async () => {
@@ -37,7 +37,7 @@ export default function SplashComponent() { // Renamed from SplashScreen to Spla
           // Add a small delay to ensure transition is applied
           setTimeout(() => {
             router.push('/landing'); // Navigate after fade and delay
-          }, 100); // 100ms delay
+          }, 50); // 100ms delay
         } catch (error) {
           console.error('Error hiding splash screen:', error);
           router.push('/landing'); // Fallback navigation
