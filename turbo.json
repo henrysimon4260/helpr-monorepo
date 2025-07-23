@@ -1,6 +1,0 @@
-{
-  "pipeline": {
-    "build": { "dependsOn": ["^build"] },
-    "dev": { "cache": false }
-  }
-}
