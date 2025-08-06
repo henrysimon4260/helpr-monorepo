@@ -1,70 +1,97 @@
 import React, { useEffect, useRef } from 'react';
-import { Text, Animated, Easing, StatusBar, StyleSheet } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
-import { NavigationProp } from '@react-navigation/native';
-import * as SplashScreenModule from 'expo-splash-screen'; // Renamed import to avoid conflict
+import { Animated, Image, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import * as SplashScreenModule from 'expo-splash-screen';
 
-export default function SplashComponent() { // Renamed from SplashScreen to SplashComponent
+export default function SplashComponent() {
   const router = useRouter();
-  const navigation = useNavigation<NavigationProp<any>>();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Prevent auto-hiding of the splash screen
-    SplashScreenModule.preventAutoHideAsync().catch(console.warn);
-      
-    navigation.setOptions({
-            transitionSpec: {
-              open: { animation: 'timing', config: { duration: 0 } }, // No open animation
-              close: { animation: 'timing', config: { duration: 0 } }, // No close animation
-            },
-            cardStyleInterpolator: ({ current }: { current: { progress: { value: number } } }) => ({
-              cardStyle: {
-                opacity: current.progress.value, // Fade effect
-              },
-            }),
+    const preloadAssets = async () => {
+      try {
+        // Prevent auto-hiding of the splash screen
+        await SplashScreenModule.preventAutoHideAsync();
+        
+        // Hide native splash
+        await SplashScreenModule.hideAsync();
+        
+        // Local assets (require()) are bundled and load instantly
+        // No need to preload them - they're already in the app bundle
+        
+        // Wait for minimum splash time
+        setTimeout(() => {
+          // Start dissolve after showing splash
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }).start(() => {
+            // Use push instead of replace to avoid white flash
+            router.push('/landing');
           });
+        }, 1200); // Reduced time since assets are preloaded
+      } catch (error) {
+        console.warn('Splash screen error:', error);
+        // Fallback - still navigate to landing
+        setTimeout(() => {
+          router.push('/landing');
+        }, 1500);
+      }
+    };
 
-   const timer = setTimeout(async () => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }).start(async () => {
-        try {
-          await SplashScreenModule.hideAsync();
-          // Add a small delay to ensure transition is applied
-          setTimeout(() => {
-            router.push('/landing'); // Navigate after fade and delay
-          }, 50); // 100ms delay
-        } catch (error) {
-          console.error('Error hiding splash screen:', error);
-          router.push('/landing'); // Fallback navigation
-        }
-      });
-    }, 1500); // Start fade after 1.5 seconds
-    return () => clearTimeout(timer);
-  }, [router, fadeAnim, navigation]);
+    preloadAssets();
+  }, [router, fadeAnim]);
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim}]}>
-      <StatusBar hidden={true} />{/* Hides the status bar to match the screenshot */} 
-      <Text style={styles.logo}>helpr</Text>
-    </Animated.View>
+    <View style={styles.container}>
+      {/* Static background that matches your landing screen */}
+      <View style={styles.landingBackground}>
+        {/* Add any static elements that match your landing screen here */}
+        <View style={styles.staticContent}>
+          {/* This creates visual continuity */}
+        </View>
+      </View>
+      
+      {/* Splash overlay that dissolves */}
+      <Animated.View style={[
+        styles.splashOverlay,
+        { opacity: fadeAnim }
+      ]}>
+        <Image 
+          source={require('../assets/images/splash.png')}
+          style={styles.splashImage}
+          resizeMode="cover"
+        />
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0c4309ff', // Dark green from the screenshot
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#0c4309', // Match your landing background
   },
-  logo: {
-    fontSize: 72, // Matches the large text size in the screenshot
-    color: '#FFFFFF', // White text
-    fontWeight: 'bold',
+  landingBackground: {
+    flex: 1,
+    backgroundColor: '#0c4309', // Same as landing screen
+  },
+  staticContent: {
+    flex: 1,
+    // Add styles that match your landing screen layout
+  },
+  splashOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  splashImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
 });

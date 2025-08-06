@@ -1,16 +1,7 @@
-import { View, Text, TextInput, Pressable, Image, FlatList, StyleSheet, ImageSourcePropType, Modal } from 'react-native';
+import { View, Text, TextInput, Pressable, Image, FlatList, StyleSheet, ImageSourcePropType } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
-import { useState } from 'react';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  withTiming, 
-  runOnJS,
-  interpolate,
-  Extrapolation
-} from 'react-native-reanimated';
+
 
 // Define valid routes as a type based on _layout.tsx
 type RouteParams = {
@@ -24,99 +15,40 @@ type RouteParams = {
   'booked-services': undefined;
   'past-services': undefined;
   'account': undefined;
-  'faq': undefined;
   'contact-support': undefined;
   'user-guide': undefined;
 };
 
 export default function Landing() {
   const router = useRouter();
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [helpVisible, setHelpVisible] = useState(false);
-  
-  // Reanimated shared values for smooth animations
-  const menuOpacity = useSharedValue(0);
-  const menuScale = useSharedValue(0.3);
-  const menuTranslateY = useSharedValue(20);
-  
-  const helpOpacity = useSharedValue(0);
-  const helpScale = useSharedValue(0.3);
-  const helpTranslateY = useSharedValue(20);
   
   // Convert route to string path for navigation
   const navigate = (route: keyof RouteParams) => router.push(route as any);
 
-  const showMenu = () => {
-    setMenuVisible(true);
-    menuOpacity.value = withTiming(1, { duration: 300 });
-    menuScale.value = withSpring(1, { damping: 15, stiffness: 200 });
-    menuTranslateY.value = withSpring(0, { damping: 15, stiffness: 200 });
-  };
+  // Placeholder SVG icons (replace with your actual icons)
+  const voiceIconSvg = `
+    <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="#0c4309"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="#0c4309" stroke-width="2"/>
+      <line x1="12" y1="19" x2="12" y2="23" stroke="#0c4309" stroke-width="2"/>
+      <line x1="8" y1="23" x2="16" y2="23" stroke="#0c4309" stroke-width="2"/>
+    </svg>
+  `;
 
-  const hideMenu = () => {
-    menuOpacity.value = withTiming(0, { duration: 200 });
-    menuScale.value = withTiming(0.3, { duration: 200 });
-    menuTranslateY.value = withTiming(20, { duration: 200 }, () => {
-      runOnJS(setMenuVisible)(false);
-    });
-  };
-
-  const showHelp = () => {
-    setHelpVisible(true);
-    helpOpacity.value = withTiming(1, { duration: 300 });
-    helpScale.value = withSpring(1, { damping: 15, stiffness: 200 });
-    helpTranslateY.value = withSpring(0, { damping: 15, stiffness: 200 });
-  };
-  
-  const hideHelp = () => {
-    helpOpacity.value = withTiming(0, { duration: 200 });
-    helpScale.value = withTiming(0.3, { duration: 200 });
-    helpTranslateY.value = withTiming(20, { duration: 200 }, () => {
-      runOnJS(setHelpVisible)(false);
-    });
-  };
-
-  // Animated styles for the modals
-  const menuAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: menuOpacity.value,
-    transform: [
-      { scale: menuScale.value },
-      { translateY: menuTranslateY.value }
-    ],
-  }));
-
-  const helpAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: helpOpacity.value,
-    transform: [
-      { scale: helpScale.value },
-      { translateY: helpTranslateY.value }
-    ],
-  }));
-
-  // Background overlay animated styles
-  const menuOverlayStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(menuOpacity.value, [0, 1], [0, 1], Extrapolation.CLAMP),
-  }));
-
-  const helpOverlayStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(helpOpacity.value, [0, 1], [0, 1], Extrapolation.CLAMP),
-  }));
-
-  // Your custom search icon SVG
-  const searchIconSvg = `
-    <svg width="24" height="24" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="8" cy="8" r="5" stroke="#555555" stroke-width="2" fill="none" />
-      <line x1="11.5" y1="11.5" x2="17" y2="17" stroke="#555555" stroke-width="2" />
+  const cameraIconSvg = `
+    <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" fill="none" stroke="#ffffff" stroke-width="2"/>
+      <circle cx="12" cy="13" r="4" fill="none" stroke="#ffffff" stroke-width="2"/>
     </svg>
   `;
 
   const services: { id: string; title: string; image: ImageSourcePropType; route: keyof RouteParams }[] = [
     { id: '1', title: 'Moving', image: require('../assets/images/moving.png'), route: 'moving' },
     { id: '2', title: 'Cleaning', image: require('../assets/images/cleaning.png'), route: 'cleaning' },
-    { id: '3', title: 'Furniture Assembly', image: require('../assets/images/furniture-assembly.png'), route: 'furniture-assembly' },
-    { id: '4', title: 'Home Improvement', image: require('../assets/images/home-improvement.png'), route: 'home-improvement' },
-    { id: '5', title: 'Running Errands', image: require('../assets/images/running-errands.png'), route: 'running-errands' },
-    { id: '6', title: 'Wall Mounting', image: require('../assets/images/wall-mounting.png'), route: 'wall-mounting' },
+    { id: '3', title: 'Wall Mounting', image: require('../assets/images/wall-mounting.png'), route: 'wall-mounting' },
+    { id: '4', title: 'Furniture Assembly', image: require('../assets/images/furniture-assembly.png'), route: 'furniture-assembly' },
+    { id: '5', title: 'Home Improvement', image: require('../assets/images/home-improvement.png'), route: 'home-improvement' },
+    { id: '6', title: 'Running Errands', image: require('../assets/images/running-errands.png'), route: 'running-errands' },
   ];
 
   const renderService = ({ item }: { item: { id: string; title: string; image: ImageSourcePropType; route: keyof RouteParams } }) => (
@@ -133,92 +65,56 @@ export default function Landing() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What can we help with?</Text>
-      <View style={styles.searchContainer}>
-        <Pressable style={styles.searchIcon}>
-          <SvgXml xml={searchIconSvg} width="24" height="24" />
-        </Pressable>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Try 'Moving' or 'Housekeeping'"
-          placeholderTextColor="#666666"
-        />
+      <View style={styles.contentArea}>
+          <Text style={styles.title}>What can we help with?</Text>
+          <Text style={styles.popularTitle}>Popular Services</Text>
+          <View style={styles.servicesWrapper}>
+            <FlatList
+              data={services}
+              renderItem={renderService}
+              keyExtractor={item => item.id}
+              numColumns={3}
+              columnWrapperStyle={styles.row}
+              contentContainerStyle={styles.listContent}
+              scrollEnabled={false}
+            />
+          </View>
+          <View style={styles.orContainer}>
+            <View style={styles.orLine} />
+            <Text style={styles.orText}>or</Text>
+            <View style={styles.orLine} />
+          </View>
+          <Text style={styles.makeYourCustomServiceText}>Make Your Custom Service</Text>
+        <View style={styles.jobDescriptionContainer}>
+          <TextInput
+            style={styles.jobDescriptionText}
+            placeholder="Describe exactly what you need...              (e. g. I need a deep cleaning of my 2 bedroom apartment, including kitchen and bathroom."
+            multiline
+            numberOfLines={4}
+            placeholderTextColor="#666666"
+          />
+          <View style={styles.inputButtonsContainer}>
+            <View style={styles.voiceContainer}>
+              <Pressable style={styles.voiceButton}>
+                <SvgXml xml={voiceIconSvg} width="20" height="20" />
+              </Pressable>
+              <Text style={styles.voiceModeText}>Voice Mode</Text>
+            </View>
+            <Pressable style={styles.cameraButton}>
+              <SvgXml xml={cameraIconSvg} width="20" height="20" />
+            </Pressable>
+          </View>
+        </View>
       </View>
-      <Text style={styles.popularTitle}>Popular Services</Text>
-      <FlatList
-        data={services}
-        renderItem={renderService}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContent}
-      />
+      
       <View style={styles.bottomNav}>
-        <Pressable onPress={showMenu} style={[styles.menuIcon, menuVisible && styles.menuIconActive]}>
+        <Pressable style={styles.menuIcon}>
           <Text style={styles.menuIconText}>☰</Text>
         </Pressable>
-        <Pressable onPress={showHelp} style={[styles.helpIcon, helpVisible && styles.helpIconActive]}>
-          <Text style={[styles.helpIconText, helpVisible && styles.helpIconTextActive]}>?</Text>
+        <Pressable style={styles.helpIcon}>
+          <Text style={styles.helpIconText}>?</Text>
         </Pressable>
       </View>
-
-      {/* Menu Modal */}
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={menuVisible}
-        onRequestClose={hideMenu}
-      >
-        <Animated.View style={[styles.modalOverlay, menuOverlayStyle]}>
-          <Pressable style={styles.overlayPressable} onPress={hideMenu} />
-          <Animated.View 
-            style={[
-              styles.modalContainer, 
-              styles.menuModalContainer,
-              menuAnimatedStyle
-            ]}
-          >
-            <Pressable style={styles.modalOption} onPress={() => { hideMenu(); navigate('booked-services' as keyof RouteParams); }}>
-              <Text style={styles.optionIcon}>✓</Text>
-              <Text style={styles.optionText}>Booked Services</Text>
-            </Pressable>
-            <Pressable style={styles.modalOption} onPress={() => { hideMenu(); navigate('past-services' as keyof RouteParams); }}>
-              <Text style={styles.optionIcon}>🕒</Text>
-              <Text style={styles.optionText}>Past Services</Text>
-            </Pressable>
-            <Pressable style={[styles.modalOption, styles.lastModalOption]} onPress={() => { hideMenu(); navigate('account' as keyof RouteParams); }}>
-              <Text style={styles.optionIcon}>👤</Text>
-              <Text style={styles.optionText}>Account</Text>
-            </Pressable>
-          </Animated.View>
-        </Animated.View>
-      </Modal>
-
-      {/* Help Modal */}
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={helpVisible}
-        onRequestClose={hideHelp}
-      >
-        <Animated.View style={[styles.modalOverlay, helpOverlayStyle]}>
-          <Pressable style={styles.overlayPressable} onPress={hideHelp} />
-          <Animated.View style={[styles.modalContainer, styles.helpModalContainer, helpAnimatedStyle]}>
-            <Pressable style={styles.modalOption} onPress={() => { hideHelp(); navigate('faq' as keyof RouteParams); }}>
-              <Text style={styles.optionIcon}>❓</Text>
-              <Text style={styles.optionText}>Frequently Asked Questions</Text>
-            </Pressable>
-            <Pressable style={styles.modalOption} onPress={() => { hideHelp(); navigate('contact-support' as keyof RouteParams); }}>
-              <Text style={styles.optionIcon}>💬</Text>
-              <Text style={styles.optionText}>Ask a Question</Text>
-            </Pressable>
-            <Pressable style={[styles.modalOption, styles.lastModalOption]} onPress={() => { hideHelp(); navigate('user-guide' as keyof RouteParams); }}>
-              <Text style={styles.optionIcon}>📖</Text>
-              <Text style={styles.optionText}>User Guide</Text>
-            </Pressable>
-          </Animated.View>
-        </Animated.View>
-      </Modal>
     </View>
   );
 }
@@ -228,8 +124,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff0cfff',
     paddingHorizontal: 20,
-    paddingTop: 100,
-    justifyContent: 'center',
+    paddingTop: 80,
+  },
+  contentArea: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    paddingBottom: 150,
   },
   title: {
     fontSize: 24,
@@ -239,29 +139,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: 'center',
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#cfbf9dff',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    marginBottom: 20,
-    position: 'relative',
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    color: '#333333',
-    fontSize: 16,
-    textAlign: 'center',
-    paddingLeft: 29, // Account for icon width to center text truly
-    paddingRight: 29, // Equal padding on right for true center
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: 15,
-    zIndex: 1,
-  },
   popularTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -270,37 +147,148 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
   },
+  orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center', // Center the entire or section
+    marginVertical: 15,
+  },
+  orText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#0c4309',
+    textAlign: 'center',
+    paddingHorizontal: 20, // Space between text and lines
+  },
+  orLine: {
+    width: 140, // Fixed width instead of flex: 1
+    height: 1,
+    backgroundColor: '#cfbf9dff', // Softer color to match the design
+  },
+  makeYourCustomServiceText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0c4309',
+    textAlign: 'center',
+    paddingTop: 5,
+    paddingBottom: 15, 
+  },
+  jobDescriptionContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#cfbf9dff',
+    borderRadius: 10,
+    paddingTop: 10,
+    marginBottom: 20,
+    height: 150,
+  },
+  jobDescriptionText: {
+    flex: 1,
+    color: '#333333',
+    fontSize: 16,
+    textAlign: 'left',
+    textAlignVertical: 'top',
+    paddingLeft: 15, 
+    paddingRight: 20, 
+  },
+  inputButtonsContainer: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-start', // Align buttons to the left
+    alignItems: 'center',
+    gap: 140,
+  },
+  voiceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  voiceButton: {
+    width: 60,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff0cfff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  voiceModeText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#0c4309',
+    textAlign: 'center',
+  },
+  cameraButton: {
+    width: 60,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#0c4309', // Green color
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  inputButtonIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  inputButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#0c4309',
+    marginLeft: 6,
+  },
+  servicesWrapper: {
+    height: 300,
+  },
   listContent: {
-    flexGrow: 1,
     paddingTop: 15,
+    paddingBottom: 10,
   },
   row: {
-    justifyContent: 'center',
-    gap: 15,
+    justifyContent: 'space-evenly',
+    gap: 10,
   },
   serviceItem: {
     flex: 1,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
     marginTop: 5,
-    maxWidth: '40%',
+    maxWidth: '30%',
   },
   serviceImage: {
-    width: 120,
-    height: 120,
+    width: 90,
+    height: 90,
     borderRadius: 12,
   },
   serviceTitle: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#0c4309',
-    marginTop: 5,
+    marginTop: 10,
+    textAlign: 'center',
   },
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 40,
     paddingBottom: 40,
+    paddingTop: 10,
     paddingRight: 40,
     position: 'absolute',
     bottom: 0,
@@ -324,10 +312,6 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderColor: 'rgba(12, 67, 9, 0.1)',
   },
-  menuIconActive: {
-    backgroundColor: '#fff0cfff',
-    transform: [{ scale: 1.05 }],
-  },
   menuIconText: {
     fontSize: 40,
     fontWeight: '900',
@@ -349,105 +333,10 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
   },
-  helpIconActive: {
-    backgroundColor: '#cfbf9dff',
-  },
   helpIconText: {
     fontSize: 36,
     fontWeight: 'bold',
     color: '#ffffff',
-  },
-  helpIconTextActive: {
-    color: '#0c4309',
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'flex-end',
-    alignItems: 'flex-start',
-    paddingBottom: 120,
-    paddingLeft: 20,
-  },
-  overlayPressable: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  modalContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    width: 220,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(12, 67, 9, 0.08)',
-  },
-  menuModalContainer: {
-    position: 'absolute',
-    bottom: 130,
-    left: 25,
-    borderBottomLeftRadius: 8,
-  },
-  helpModalContainer: {
-    position: 'absolute',
-    bottom: 130,
-    right: 65,
-    borderBottomRightRadius: 8,
-  },
-  modalOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(0, 0, 0, 0.08)',
-    minHeight: 56,
-  },
-  lastModalOption: {
-    borderBottomWidth: 0,
-  },
-  optionIcon: {
-    fontSize: 18,
-    marginRight: 16,
-    width: 24,
-    color: '#0c4309',
-    textAlign: 'center',
-  },
-  optionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333333',
-    flex: 1,
-    lineHeight: 20,
-  },
-  closeButton: {
-    backgroundColor: '#0c4309',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  closeButtonText: {
-    color: '#fff0cfff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 
