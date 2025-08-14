@@ -1,6 +1,10 @@
-import { View, Text, TextInput, Pressable, Image, FlatList, StyleSheet, ImageSourcePropType } from 'react-native';
+import { View, Text, TextInput, Pressable, Image, FlatList, StyleSheet, ImageSourcePropType, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
+import { useRef, useState } from 'react';
+// @ts-ignore - Only for native platforms
+import LottieView from 'lottie-react-native';
+
 
 
 // Define valid routes as a type based on _layout.tsx
@@ -21,9 +25,29 @@ type RouteParams = {
 
 export default function Landing() {
   const router = useRouter();
+  const lottieRef = useRef<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   // Convert route to string path for navigation
   const navigate = (route: keyof RouteParams) => router.push(route as any);
+
+  // Handle menu button press - works for both Lottie and simple animation
+  const handleMenuPress = () => {
+    if (Platform.OS === 'web') {
+      // Simple state toggle for web (no animation)
+      setIsMenuOpen(!isMenuOpen);
+    } else {
+      // Lottie animation for native platforms
+      if (lottieRef.current) {
+        if (isMenuOpen) {
+          lottieRef.current.play(24, 0);
+        } else {
+          lottieRef.current.play(0, 24);
+        }
+      }
+      setIsMenuOpen(!isMenuOpen);
+    }
+  };
 
   // Placeholder SVG icons (replace with your actual icons)
   const voiceIconSvg = `
@@ -108,11 +132,20 @@ export default function Landing() {
       </View>
       
       <View style={styles.bottomNav}>
-        <Pressable style={styles.menuIcon}>
-          <Text style={styles.menuIconText}>☰</Text>
-        </Pressable>
-        <Pressable style={styles.helpIcon}>
-          <Text style={styles.helpIconText}>?</Text>
+        <Pressable style={styles.lottieContainer} onPress={handleMenuPress}>
+          {Platform.OS === 'web' ? (
+            // Simple static icon for web
+            <Text style={styles.menuIconText}>☰</Text>
+          ) : (
+            // Lottie animation for native platforms
+            <LottieView
+              ref={lottieRef}
+              source={require('../assets/animations/menuButtonAnimation.json')}
+              autoPlay={false}
+              loop={false}
+              style={styles.lottieAnimation}
+            />
+          )}
         </Pressable>
       </View>
     </View>
@@ -285,7 +318,7 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     paddingHorizontal: 40,
     paddingBottom: 40,
     paddingTop: 10,
@@ -313,11 +346,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(12, 67, 9, 0.1)',
   },
   menuIconText: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: '#0c4309',
+    fontSize: 24,
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
-  helpIcon: {
+  lottieContainer: {
     width: 70,
     height: 70,
     borderRadius: 35,
@@ -333,10 +366,9 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
   },
-  helpIconText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#ffffff',
+  lottieAnimation: {
+    width: 60,
+    height: 60,
   },
 });
 
